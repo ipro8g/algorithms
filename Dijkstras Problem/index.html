@@ -1,0 +1,172 @@
+<!doctype html>
+<head></head>
+<body>
+
+<center>
+
+<h2>step 1. testing the algorithm without considering efficiency</h2>
+
+<img src="map2.png" style="height:200px;width:400px;"></img>
+
+<h2 id="out"></h2>
+
+<script src="./maps.js"></script>
+
+<script>
+
+    let letters = [];
+    let indexes = [];
+    
+    for(let a = 0; a <= 25; a++){
+    
+            letters[String.fromCharCode(97 + a)] = a;
+            indexes.push(String.fromCharCode(97 + a));
+    }
+    
+    const raw_map = map2;
+    let map = [];
+    
+    raw_map.forEach((c)=>{
+    
+        let new_connect = [];
+        
+        c.connect.forEach((v)=>{
+        
+            const ob3 = {
+            
+                "name":v.name,
+                "index":letters[v.name],
+                "distance":v.distance
+            }
+            
+            new_connect.push(ob3);
+        })
+    
+        let ob2 = {
+            
+            "name":c.name,
+            "index":letters[c.name],
+            "connect":new_connect
+        }
+        
+        map.push(ob2);
+    })
+    
+    
+    
+    const raw_start = "a";
+    const raw_end = "u";
+    const cities_map = map;
+    
+    const start = letters[raw_start];
+    const end = letters[raw_end];
+    
+    let result = false;
+    
+    while(!result){
+    
+        result = simulate(cities_map, start, end);
+    }
+    
+    let txt = "for the map2 the path finded from [ " + raw_start + " to " + raw_end + " ] was: [";
+    
+    result.path.forEach((p)=>{
+    
+        txt += " " + p;
+    })
+    
+    txt += " ] with " + result.walked + " distance units";
+    
+    document.getElementById("out").innerText = txt;
+    
+function simulate(cities, s, e){
+
+    let path = [];
+    
+    path.push(indexes[s]);
+    
+    let walked = 0;
+    let option = random_int(0, cities[s].connect.length-1);
+    
+    path.push(indexes[cities[s].connect[option].index]);
+    walked += cities[s].connect[option].distance;
+    
+    let index = cities[s].connect[option].index;
+    
+    let connect = get_connect(cities, index);
+    let option2 = random_int(0, connect.length-1);
+    let checker = (arr, target) => target.every(v => arr.includes(v));
+    
+    while(index === s || index !== e){
+    
+        option2 = random_int(0, connect.length-1);
+        
+        const containing_arr = [];
+        
+        connect.forEach((c)=>{
+        
+            containing_arr.push(indexes[c.index]);
+        })
+        
+        if(checker(path, containing_arr)){
+        
+            return false;
+        }else if(path.length === cities.length){
+        
+            break;
+        }else if(connect[option2].index === s || path.includes(indexes[connect[option2].index])){
+        
+            continue;
+        }
+        
+        const last_connect = connect;
+        
+        const ob = visit(cities, connect, option2);
+        connect = ob.connect;
+        walked += ob.distance;
+        path.push(indexes[ob.index]);
+        
+        if(last_connect[option2].index === e || path.length === cities.length){
+        
+            break;
+        }
+    }
+    
+    const result = {
+    
+        "path":path,
+        "walked":walked
+    }
+    
+    return result;
+}
+
+function visit(cities, connect, option){
+
+    const result = {
+    
+        "distance":connect[option].distance,
+        "index":connect[option].index,
+        "connect":cities[connect[option].index].connect
+    }
+    
+    return result;
+}
+
+function get_connect(cities, index){
+
+    return cities[index].connect;
+}
+    
+
+
+function random_int(min, max) {
+
+    let floor = Math.ceil(min);
+    let coil = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+</script>
+
+</body>
+</html>
