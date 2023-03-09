@@ -86,7 +86,7 @@ function get_distance(){
     })
 
 
-    if(indexes.includes(start_input.value) && indexes.includes(end_input.value) && current_map_indexes.includes(letters[start_input.value]) && current_map_indexes.includes(letters[end_input.value])){
+    if(indexes.includes(start_input.value) && indexes.includes(end_input.value) && current_map_indexes.includes(letters[start_input.value]) && current_map_indexes.includes(letters[end_input.value]) && start_input.value !== end_input.value){
     
         console.log("both points are elegible, continue process...");
     
@@ -156,6 +156,9 @@ function simulate(cities, s, e){
     
     let connect = get_connect(cities, index);
     let option2 = random_int(0, connect.length-1);
+    
+    //there is one scenario when the path is in a place where all options had been explored,
+    //in that case when want to abort simulation, its not common but posible
     let checker = (arr, target) => target.every(v => arr.includes(v));
     
     while(index === s || index !== e){
