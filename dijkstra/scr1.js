@@ -86,7 +86,7 @@ function get_distance(){
     })
 
 
-    if(indexes.includes(start_input.value) && indexes.includes(end_input.value) && current_map_indexes.includes(letters[start_input.value]) && current_map_indexes.includes(letters[end_input.value]) && start_input.value !== end_input.value){
+    if(indexes.includes(start_input.value) && indexes.includes(end_input.value) && current_map_indexes.includes(letters[start_input.value]) && current_map_indexes.includes(letters[end_input.value])){
     
         console.log("both points are elegible, continue process...");
     
@@ -106,7 +106,7 @@ function get_distance(){
     const end = letters[raw_end];
     
     //a good number to simulate until get the must efficient value is:
-    const simulations_number = selected_map.map.length * selected_map.map.length;
+    const simulations_number = selected_map.map.length * 10;
     let min = 1000;
     
     //the winner set
@@ -147,23 +147,45 @@ function simulate(cities, s, e){
     path.push(indexes[s]);
     
     let walked = 0;
-    let option = random_int(0, cities[s].connect.length-1);
     
-    path.push(indexes[cities[s].connect[option].index]);
-    walked += cities[s].connect[option].distance;
+    let connect = cities[s].connect;
     
-    let index = cities[s].connect[option].index;
+    let option2;
     
-    let connect = get_connect(cities, index);
-    let option2 = random_int(0, connect.length-1);
+    //look first if we have the target in the connect ob
+    let look_result = connect_look(cities, s, e);
     
-    //there is one scenario when the path is in a place where all options had been explored,
-    //in that case when want to abort simulation, its not common but posible
+    if(look_result.result){
+    
+        option2 = look_result.index;
+    }else{
+    
+        option2 = random_int(0, connect.length-1);
+    }
+    
+    path.push(indexes[connect[option2].index]);
+    walked += connect[option2].distance;
+    
+    let index = connect[option2].index;
+    
+    connect = get_connect(cities, index);
+    
+    //now there is one case when all connect options are already in the path array
+    //in that scenario (fail) we want to abort the loop and start again
     let checker = (arr, target) => target.every(v => arr.includes(v));
     
     while(index === s || index !== e){
     
-        option2 = random_int(0, connect.length-1);
+        //look first if we have the target in the connect ob
+        look_result = connect_look(cities, index, e);
+    
+        if(look_result.result){
+    
+            option2 = look_result.index;
+        }else{
+    
+            option2 = random_int(0, connect.length-1);
+        }
         
         const containing_arr = [];
         
@@ -190,6 +212,8 @@ function simulate(cities, s, e){
         walked += ob.distance;
         path.push(indexes[ob.index]);
         
+        index = ob.index;
+        
         if(last_connect[option2].index === e || path.length === cities.length){
         
             break;
@@ -213,6 +237,26 @@ function visit(cities, connect, option){
         "index":connect[option].index,
         "connect":cities[connect[option].index].connect
     }
+    
+    return result;
+}
+
+function connect_look(cities, index, target){
+
+    let result = {
+    
+        "result":false,
+        "index":false
+    }
+
+    cities[index].connect.forEach((c, index)=>{
+    
+        if(c.index === target){
+        
+            result.result = true;
+            result.index = index;
+        }
+    })
     
     return result;
 }
